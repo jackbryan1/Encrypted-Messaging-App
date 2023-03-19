@@ -2,6 +2,9 @@ const path = require('path');
 
 const { app, BrowserWindow } = require('electron');
 const isDev = require('electron-is-dev');
+const generateKeys = require('./GenerateKeys');
+const keyHelper = require('./KeyHelper');
+const { ipcMain } = require('electron')
 
 function createWindow() {
     // Create the browser window.
@@ -10,6 +13,7 @@ function createWindow() {
         height: 600,
         webPreferences: {
             nodeIntegration: true,
+            contextIsolation: false,
         },
     });
 
@@ -22,9 +26,13 @@ function createWindow() {
     );
     // Open the DevTools.
     if (isDev) {
-        win.webContents.openDevTools({ mode: 'detach' });
+        win.webContents.openDevTools({mode: 'detach'});
     }
 }
+
+ipcMain.on('generateKeysReq', (event, arg) => {
+    event.returnValue = ('generateKeysRes', JSON.stringify(generateKeys.generateKeys()));
+})
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
