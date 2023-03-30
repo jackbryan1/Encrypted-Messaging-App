@@ -1,13 +1,14 @@
-import logo from './logo.svg';
 import './App.css';
-import UsernameForm from "./UsernameForm";
-import MessageForm from "./MessageForm";
+import RegistrationForm from "./RegistrationForm";
+import SendMessageForm from "./SendMessageForm";
+import ReceiveMessageForm from "./ReceiveMessageForm";
 
 function App() {
   return (
     <div className="App">
-      <UsernameForm></UsernameForm>
-      <MessageForm></MessageForm>
+      <RegistrationForm></RegistrationForm>
+      <SendMessageForm></SendMessageForm>
+      <ReceiveMessageForm></ReceiveMessageForm>
     </div>
   );
 }

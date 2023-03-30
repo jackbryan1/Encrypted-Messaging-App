@@ -1,9 +1,8 @@
 import React from 'react';
 import axios from 'axios';
-//import generateKeys from '../public/GenerateKeys';
 const { ipcRenderer } = window.require('electron');
 
-class UsernameForm extends React.Component {
+class RegistrationForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {value: ''};
@@ -17,24 +16,21 @@ class UsernameForm extends React.Component {
     }
 
     handleSubmit(event) {
-        //const userDetails = generateKeys();
-        let userDetails = JSON.parse(ipcRenderer.sendSync('generateKeysReq', null));
-
-        console.log(userDetails);
+        let userDetails = JSON.parse(ipcRenderer.sendSync('generateKeysReq', this.state.value));
 
         const submitRequest = async () => {
-            await axios.post("http://localhost:5000/username", {
+            await axios.post("http://localhost:5000/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                name: JSON.stringify(this.state.value),
-                registrationId: JSON.stringify(userDetails.registrationId),
-                publicIdentityKey: JSON.stringify(userDetails.identityKeyPair.publicKey),
-                signedPreKeyId: JSON.stringify(userDetails.signedPreKey.id()),
-                signedPreKeyPublicKey: JSON.stringify(userDetails.signedPreKey.publicKey()),
-                signedPreKeyRecordSignature: JSON.stringify(userDetails.signedPreKey.signature()),
-                preKeys: JSON.stringify(userDetails.preKeys),
+                name: this.state.value,
+                registrationId: userDetails.registrationId,
+                publicIdentityKey: userDetails.publicIdentityKey,
+                signedPreKeyId: userDetails.signedPreKeyId,
+                signedPreKeyPublicKey: userDetails.signedPreKeyPublicKey,
+                signedPreKeyRecordSignature: userDetails.signedPreKeyRecordSignature,
+                preKeys: userDetails.preKeys,
             })
                 .catch(error => {
                     window.alert(error);
@@ -61,4 +57,4 @@ class UsernameForm extends React.Component {
     }
 }
 
-export default UsernameForm;
+export default RegistrationForm;

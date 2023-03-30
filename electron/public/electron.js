@@ -31,7 +31,15 @@ function createWindow() {
 }
 
 ipcMain.on('generateKeysReq', (event, arg) => {
-    event.returnValue = ('generateKeysRes', JSON.stringify(generateKeys.generateKeys()));
+    event.returnValue = ('generateKeysRes', JSON.stringify(generateKeys.generateKeys(arg)));
+})
+
+ipcMain.on('deserialiseRemoteReq', (event, arg) => {
+    event.returnValue = ('deserialiseRemoteRes', JSON.stringify(keyHelper.deserialiseRemoteUser(arg)));
+})
+
+ipcMain.on('deserialiseLocalReq', (event, arg) => {
+    event.returnValue = ('deserialiseLocalRes', JSON.stringify(keyHelper.deserialiseLocalUser(arg)));
 })
 
 // This method will be called when Electron has finished
