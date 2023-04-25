@@ -5,6 +5,7 @@ const isDev = require('electron-is-dev');
 const generateKeys = require('./GenerateKeys');
 const keyHelper = require('./KeyHelper');
 const { ipcMain } = require('electron')
+const Session = require("./Session");
 
 function createWindow() {
     // Create the browser window.
@@ -40,6 +41,24 @@ ipcMain.on('deserialiseRemoteReq', (event, arg) => {
 
 ipcMain.on('deserialiseLocalReq', (event, arg) => {
     event.returnValue = ('deserialiseLocalRes', JSON.stringify(keyHelper.deserialiseLocalUser(arg)));
+})
+
+ipcMain.on('sendMessageReq', async (event, arg) => {
+    const remoteUser = keyHelper.deserialiseRemoteUser(JSON.parse(arg.remoteUser));
+    const localUser = keyHelper.deserialiseLocalUser(arg.localUser);
+    const session = new Session.Session(localUser, remoteUser);
+    const encrypted = await session.encrypt(arg.message);
+    console.log(encrypted);
+    event.returnValue = ('sendMessageRes', JSON.stringify(encrypted));
+})
+
+ipcMain.on('receiveMessageReq',async (event, arg) => {
+    const remoteUser = keyHelper.deserialiseRemoteUser(JSON.parse(arg.remoteUser));
+    const localUser = keyHelper.deserialiseLocalUser(arg.localUser);
+    const session = new Session.Session(localUser, remoteUser);
+    const decrypted = await session.decrypt(Buffer.from(arg.message));
+    console.log(decrypted.toString());
+    event.returnValue = ('receiveMessageRes', JSON.stringify(decrypted));
 })
 
 // This method will be called when Electron has finished

@@ -22,17 +22,31 @@ class SendMessageForm extends React.Component {
     }
 
     async handleSubmit(event) {
-        const getRecipient = async () => {
-            return await axios.get(
-                "http://localhost:5000/getUser", {
-                    method: "GET",
+        const decryptMessages = async () => {
+            event.preventDefault();
+            const messages = await axios.get(
+                "http://localhost:5000/getMessage", {
                     params: {
-                        name: this.state.to,
+                        //name: this.state.to,
+                        name: "test21",
                     }
                 });
+            console.log(messages.data[0]);
+            const remoteUser = await axios.get(
+                "http://localhost:5000/getUser", {
+                    params: {
+                        name: messages.data[0].from,
+                    }
+                });
+
+            console.log(remoteUser);
+            const decrypted = JSON.parse(ipcRenderer.sendSync('receiveMessageReq', {remoteUser: JSON.stringify(remoteUser.data), localUser: messages.data[0].to, message: messages.data[0].message}));
+            return decrypted;
         }
-        const remoteUser = JSON.parse(ipcRenderer.sendSync('deserialiseRemoteReq', (await getRecipient()).data));
-        const localUser = JSON.parse(ipcRenderer.sendSync('deserialiseLocalReq', this.state.to));
+        const message = await decryptMessages();
+        this.state.message = message;
+        //const remoteUser = JSON.parse(ipcRenderer.sendSync('deserialiseRemoteReq', (await getRecipient()).data));
+        //const localUser = JSON.parse(ipcRenderer.sendSync('deserialiseLocalReq', this.state.to));
         /*        let message = JSON.parse(ipcRenderer.sendSync('sendMessageReq', null));
                 const submitRequest = async () => {
                     await axios.post("http://localhost:5000/message", {
@@ -50,7 +64,7 @@ class SendMessageForm extends React.Component {
 
                 submitRequest();*/
 
-        alert('A message was sent: ' + this.state.message + ' to: ' + this.state.to);
+        alert('A message was received: ' + this.state.message + ' from: ' + this.state.to);
         event.preventDefault();
     }
 
