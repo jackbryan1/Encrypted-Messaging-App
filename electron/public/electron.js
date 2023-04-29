@@ -58,7 +58,7 @@ ipcMain.on('receiveMessageReq',async (event, arg) => {
     const session = new Session.Session(localUser, remoteUser);
     const decrypted = await session.decrypt(Buffer.from(arg.message));
     console.log(decrypted.toString());
-    event.returnValue = ('receiveMessageRes', JSON.stringify(decrypted));
+    event.returnValue = ('receiveMessageRes', JSON.stringify(decrypted.toString()));
 })
 
 // This method will be called when Electron has finished

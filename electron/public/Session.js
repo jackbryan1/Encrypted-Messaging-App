@@ -11,7 +11,7 @@ class Session {
 
     async encrypt(message) {
 
-        const remoteAddress = ProtocolAddress.new('test21', 1);
+        const remoteAddress = ProtocolAddress.new(this.remoteUser.name, 1);
         const sessionStore = new InMemorySessionStore();
         const identityStore = new InMemoryIdentityKeyStore(this.localUser.identityKey.privateKey, this.localUser.registrationId);
 
@@ -40,7 +40,7 @@ class Session {
 
     async decrypt(message) {
         const ciphertext = PreKeySignalMessage.deserialize(message);
-        const remoteAddress = ProtocolAddress.new('test20', 1);
+        const remoteAddress = ProtocolAddress.new(this.remoteUser.name, 1);
 
         const sessionStore = new InMemorySessionStore();
         const identityStore = new InMemoryIdentityKeyStore(this.localUser.identityKey.privateKey, this.localUser.registrationId);

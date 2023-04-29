@@ -1,14 +1,10 @@
 import './App.css';
-import RegistrationForm from "./RegistrationForm";
-import SendMessageForm from "./SendMessageForm";
-import ReceiveMessageForm from "./ReceiveMessageForm";
+import Page from "./Page";
 
 function App() {
   return (
     <div className="App">
-      <RegistrationForm></RegistrationForm>
-      <SendMessageForm></SendMessageForm>
-      <ReceiveMessageForm></ReceiveMessageForm>
+      <Page></Page>
     </div>
   );
 }

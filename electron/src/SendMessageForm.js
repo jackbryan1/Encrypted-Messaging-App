@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
-//import Session from '../public/Session';
+import {IconButton, Tooltip} from "@mui/material";
+import InfoIcon from "@mui/icons-material/Info";
 
 const { ipcRenderer } = window.require('electron');
 
@@ -44,7 +45,7 @@ class SendMessageForm extends React.Component {
                     "Content-Type": "application/json",
                 },
                 to: this.state.to,
-                from: "test20",
+                from: this.props.name,
                 message: encrypted,
             })
                 .catch(error => {
@@ -53,43 +54,6 @@ class SendMessageForm extends React.Component {
                 });
         }
         submitRequest();
-/*        const remoteUser = await getRecipient().data;
-        console.log(remoteUser)
-        const encrypted = ipcRenderer.sendSync('sendMessageReq', {remoteUser: remoteUser, localUser: this.state.to});
-        const submitRequest = async () => {
-            await axios.post("http://localhost:5000/message", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                message: JSON.stringify(encrypted),
-            })
-                .catch(error => {
-                    window.alert(error);
-
-                });
-        }
-
-        submitRequest();*/
-        //const remoteUser = JSON.parse(ipcRenderer.sendSync('deserialiseRemoteReq', (await getRecipient()).data));
-        //const localUser = JSON.parse(ipcRenderer.sendSync('deserialiseLocalReq', this.state.to));
-        //new Session(remoteUser, localUser);
-        /*        let message = JSON.parse(ipcRenderer.sendSync('sendMessageReq', null));
-                const submitRequest = async () => {
-                    await axios.post("http://localhost:5000/message", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        name: JSON.stringify(this.state.value),
-                    })
-                        .catch(error => {
-                            window.alert(error);
-
-                        });
-                }
-
-                submitRequest();*/
 
         alert('A message was sent: ' + this.state.message + ' to: ' + this.state.to);
         event.preventDefault();
@@ -107,6 +71,11 @@ class SendMessageForm extends React.Component {
                     <input type="text" value={this.state.message} onChange={this.handleMessageChange} />
                 </label>
                 <input type="submit" value="Send" />
+                <Tooltip title="When a message is sent it is encrypted using the user's keys and sent to the server">
+                    <IconButton>
+                        <InfoIcon></InfoIcon>
+                    </IconButton>
+                </Tooltip>
             </form>
         );
     }
