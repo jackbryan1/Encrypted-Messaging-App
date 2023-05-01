@@ -34,7 +34,11 @@ router.post("/sendMessage", async (req, res) => {
 
 router.get("/getMessage", async (req, res) => {
     const retVal = await Message.find({ to: req.query.name }).exec();
-    console.log(retVal);
+    res.json(retVal);
+});
+
+router.post("/replacePreKey", async (req, res) => {
+    const retVal = await Message.find({ to: req.query.name }).exec();
     res.json(retVal);
 });
 

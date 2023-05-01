@@ -10,14 +10,14 @@ const { ipcRenderer } = window.require('electron');
 class ReceiveMessageForm extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {message: []};
+        this.state = {message: new Map()};
 
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     async handleSubmit(event) {
         const decryptMessages = async () => {
-            this.state.message.length = 0;
+            this.state.message.clear();
             event.preventDefault();
             const messages = await axios.get(
                 "http://localhost:5000/getMessage", {
@@ -33,9 +33,18 @@ class ReceiveMessageForm extends React.Component {
                         }
                     });
 
-                console.log(remoteUser);
                 const decrypted = JSON.parse(ipcRenderer.sendSync('receiveMessageReq', {remoteUser: JSON.stringify(remoteUser.data), localUser: item.to, message: item.message}));
-                this.state.message.push(decrypted);
+                console.log(this.state.message.has(item.from));
+                if (this.state.message.has(item.from)) {
+                    const msgs = this.state.message.get(item.from);
+                    msgs.push(decrypted);
+                    console.log(msgs);
+                    this.state.message.set(item.from, msgs);
+                } else {
+                    const msgs = [decrypted];
+                    console.log(msgs);
+                    this.state.message.set(item.from, msgs);
+                }
             }
         }
         await decryptMessages();
@@ -56,7 +65,7 @@ class ReceiveMessageForm extends React.Component {
                     </IconButton>
                 </Tooltip>
                 <div>
-                    {this.state.message.map((object, i) => <Messages obj={object} key={i}/>)}
+                    {Array.from(this.state.message.entries()).map((message) => <Messages message={message}/>)}
                 </div>
             </form>
         );

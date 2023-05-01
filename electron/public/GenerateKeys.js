@@ -1,4 +1,4 @@
-const {IdentityKeyPair, PreKeyRecord, PrivateKey, SignedPreKeyRecord} = require('@signalapp/libsignal-client');
+const {IdentityKeyPair, PreKeyRecord, PrivateKey, SignedPreKeyRecord, ProtocolAddress} = require('@signalapp/libsignal-client');
 const crypto = require("crypto");
 const fs = require("fs")
 
@@ -56,6 +56,30 @@ function generateKeys(username) {
         signedPreKeyPublicKey: signedPreKey.publicKey().serialize(),
         signedPreKeyRecordSignature: signedPreKey.signature(),
     };
+}
+
+function replacePreKey(username) {
+    const appdata = process.env.APPDATA || (process.platform === 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share");
+    let localUser = JSON.parse(fs.readFileSync(appdata + "\\electron\\" + username + ".json", 'utf8'));
+
+    const preKey = generatePreKeys(crypto.randomBytes(4).readUInt32BE(0), 1).map(function(e) {
+        return e.serialize();
+    });
+
+    localUser.preKeys.push(...preKey)
+
+    fs.writeFile(appdata + "\\electron\\" + username + ".json", JSON.stringify({
+        identityKeyPair: localUser.identityKeyPair,
+        registrationId: localUser.registrationId,
+        preKeys: localUser.preKeys,
+        signedPreKey: localUser.signedPreKey
+    }), 'utf8', (err) => {
+        if (err) throw err;
+    });
+
+    return {
+        preKey: preKey,
+    }
 }
 
 module.exports = {

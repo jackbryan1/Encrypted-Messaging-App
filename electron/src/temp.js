@@ -10,7 +10,7 @@ export default function ControlledAccordions({ messages }) {
 
     return (
         <div>
-            {messages.map((object, i) => <Messages obj={object} key={i}/>)}
+            {messages.map((message, i) => <Messages message={message} key={i}/>)}
         </div>
     );
 }

@@ -5,10 +5,11 @@ import Typography from "@mui/material/Typography";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import * as React from "react";
 
-export default function Messages() {
+export default function Messages({ message }) {
     const [expanded, setExpanded] = React.useState(false);
 
     const handleChange = (panel) => (event, isExpanded) => {
+        console.log(message);
         setExpanded(isExpanded ? panel : false);
     };
 
@@ -21,15 +22,14 @@ export default function Messages() {
                 id="panel1bh-header"
             >
                 <Typography sx={{ width: '33%', flexShrink: 0 }}>
-                    General settings
+                    {message[0]}
                 </Typography>
-                <Typography sx={{ color: 'text.secondary' }}>I am an accordion</Typography>
             </AccordionSummary>
             <AccordionDetails>
-                <Typography>
-                    Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat.
-                    Aliquam eget maximus est, id dignissim quam.
-                </Typography>
+                {message[1].map((msg) =>
+                    <Typography>
+                        { msg }
+                    </Typography>)}
             </AccordionDetails>
         </Accordion>
         </div>

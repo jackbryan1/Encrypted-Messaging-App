@@ -25,7 +25,6 @@ class RegistrationForm extends React.Component {
                         name: this.props.name,
                     }
                 });
-            console.log(userData.data);
             return !userData.data;
         }
 

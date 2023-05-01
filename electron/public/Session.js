@@ -1,5 +1,5 @@
 const {IdentityKeyStore, SessionStore, signalEncrypt, ProtocolAddress, SessionRecord, PreKeyBundle,
-    processPreKeyBundle, PreKeyStore, SignedPreKeyStore, SenderKeyStore, PreKeySignalMessage, signalDecryptPreKey,
+    processPreKeyBundle, PreKeyStore, SignedPreKeyStore, PreKeySignalMessage, signalDecryptPreKey,
     SignedPreKeyRecord, PreKeyRecord
 } = require("@signalapp/libsignal-client");
 
@@ -34,7 +34,6 @@ class Session {
         );
 
         const encrypted = await signalEncrypt(Buffer.from(message), remoteAddress, sessionStore, identityStore);
-        //const retVal = PreKeySignalMessage(encrypted);
         return encrypted.serialize();
     }
 
@@ -150,7 +149,6 @@ class InMemoryIdentityKeyStore extends IdentityKeyStore {
     }
 }
 
-
 class InMemoryPreKeyStore extends PreKeyStore {
     state = new Map();
     async savePreKey(
@@ -184,143 +182,6 @@ class InMemorySignedPreKeyStore extends SignedPreKeyStore {
         );
     }
 }
-
-class InMemorySenderKeyStore extends SenderKeyStore {
-    state = new Map();
-    async saveSenderKey(
-        sender,
-        distributionId,
-        record
-    ) {
-        const idx =
-            distributionId + '::' + sender.name() + '::' + sender.deviceId();
-        Promise.resolve(this.state.set(idx, record));
-    }
-    async getSenderKey(
-        sender,
-        distributionId
-    ) {
-        const idx =
-            distributionId + '::' + sender.name() + '::' + sender.deviceId();
-        if (this.state.has(idx)) {
-            return Promise.resolve(this.state.get(idx));
-        } else {
-            return Promise.resolve(null);
-        }
-    }
-}
-
-/*class SessionStoreImpl extends SessionStore {
-
-    store = {};
-    constructor( ) {
-        super();
-    }
-
-    async saveSession(address, record) {
-        console.log(JSON.stringify(address));
-        return Promise.resolve(this.put(address, record.serialize()));
-    }
-
-    async getSession(address) {
-        console.log(JSON.stringify(address))
-        console.log(this.get(address, new SessionRecord()));
-        return Promise.resolve(this.get(address, new SessionRecord()));
-    }
-
-    async getExistingSessions(addresses) {
-/!*    const encodedAddresses = addresses.map(addr =>
-        toQualifiedAddress(this.ourUuid, addr)
-    );
-    return window.textsecure.storage.protocol.loadSessions(encodedAddresses, {
-        zone: this.zone,
-    });*!/
-        console.log("uh oh")
-        return null;
-    }
-
-    get(key, defaultValue) {
-        if (key === null || key === undefined)
-            throw new Error("Tried to get value for undefined/null key");
-        if (key in this.store) {
-            return this.store[key];
-        } else {
-            return defaultValue;
-        }
-    }
-    put(key, value) {
-        if (key === undefined || value === undefined || key === null || value === null)
-            throw new Error("Tried to store undefined/null");
-        this.store[key] = value;
-    }
-}
-
-class IdentityKeyStoreImpl extends IdentityKeyStore {
-
-    store = {};
-
-    constructor(identityKeyPair, registrationId) {
-        super();
-
-        this.identityKeyPair = identityKeyPair;
-        this.registrationId = registrationId;
-    }
-
-    async getIdentityKey() {
-        return this.identityKeyPair.privateKey;
-    }
-
-    async getLocalRegistrationId() {
-        return this.registrationId;
-    }
-
-    async getIdentity(address) {
-        if (address === null || address === undefined)
-            throw new Error("Tried to get identity key for undefined/null address");
-        return Promise.resolve(this.get('identityKey' + address));
-    }
-
-    async saveIdentity(address, key) {
-        if (address === null || address === undefined)
-            throw new Error("Tried to put identity key for undefined/null key");
-
-        const existing = this.get('identityKey' + address.name);
-        this.put('identityKey' + address.name, key)
-
-        if (existing && key.toString() !== existing.toString()) {
-            return Promise.resolve(true);
-        } else {
-            return Promise.resolve(false);
-        }
-    }
-
-    async isTrustedIdentity(address, key, direction) {
-        if (address === null || address === undefined) {
-            throw new Error("tried to check identity key for undefined/null key");
-        }
-        const trusted = this.get('identityKey' + address);
-        if (trusted === undefined) {
-            return Promise.resolve(true);
-        }
-        return Promise.resolve(key.toString() === trusted.toString());
-    }
-
-    put(key, value) {
-        if (key === undefined || value === undefined || key === null || value === null)
-            throw new Error("Tried to store undefined/null");
-        this.store[key] = value;
-    }
-
-    get(key, defaultValue) {
-        if (key === null || key === undefined)
-            throw new Error("Tried to get value for undefined/null key");
-        if (key in this.store) {
-            return this.store[key];
-        } else {
-            return defaultValue;
-        }
-    }
-}*/
 
 module.exports = {
     Session
