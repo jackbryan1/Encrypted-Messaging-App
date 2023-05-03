@@ -9,7 +9,6 @@ export default function Messages({ message }) {
     const [expanded, setExpanded] = React.useState(false);
 
     const handleChange = (panel) => (event, isExpanded) => {
-        console.log(message);
         setExpanded(isExpanded ? panel : false);
     };
 

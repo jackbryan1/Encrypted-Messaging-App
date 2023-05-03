@@ -33,11 +33,10 @@ class SendMessageForm extends React.Component {
                     }
                 });
 
-            const encrypted = JSON.parse(ipcRenderer.sendSync('sendMessageReq', {remoteUser: JSON.stringify(retVal.data), localUser: "test20", message: this.state.message}));
+            const encrypted = JSON.parse(ipcRenderer.sendSync('sendMessageReq', {remoteUser: JSON.stringify(retVal.data), localUser: this.props.name, message: this.state.message}));
             return encrypted;
         }
         const encrypted = await encryptMessage();
-        console.log(encrypted);
         const submitRequest = async () => {
             await axios.post("http://localhost:5000/sendMessage", {
                 method: "POST",

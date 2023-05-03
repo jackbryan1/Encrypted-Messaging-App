@@ -1,5 +1,6 @@
 const {IdentityKeyPair, SignedPreKeyRecord, PreKeyRecord, PublicKey, ProtocolAddress} = require("@signalapp/libsignal-client");
 const fs = require("fs");
+const {readUser} = require("./FileHelper");
 
 function deserialiseIdentityKeyPair(identityKeyPair) {
     return IdentityKeyPair.deserialize(Buffer.from(identityKeyPair));
@@ -19,10 +20,10 @@ function deserialisePreKey(preKeyRecord) {
 
 function deserialiseLocalUser(username) {
 
-    const appdata = process.env.APPDATA || (process.platform === 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share");
-    let localUser = JSON.parse(fs.readFileSync(appdata + "\\electron\\" + username + ".json", 'utf8'));
+    const localUser = readUser(username);
 
     return {
+        name: localUser.name,
         identityKey: deserialiseIdentityKeyPair(Buffer.from(localUser.identityKeyPair)),
         registrationId: localUser.registrationId,
         preKeys: localUser.preKeys.map(function (e) {

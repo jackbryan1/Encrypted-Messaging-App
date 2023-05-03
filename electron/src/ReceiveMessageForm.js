@@ -1,8 +1,7 @@
 import React from 'react';
 import axios from 'axios';
-import {IconButton, TextField, Tooltip} from "@mui/material";
+import {IconButton, Tooltip} from "@mui/material";
 import InfoIcon from '@mui/icons-material/Info';
-import ControlledAccordions from "./temp";
 import Messages from "./Messages";
 
 const { ipcRenderer } = window.require('electron');
@@ -34,22 +33,18 @@ class ReceiveMessageForm extends React.Component {
                     });
 
                 const decrypted = JSON.parse(ipcRenderer.sendSync('receiveMessageReq', {remoteUser: JSON.stringify(remoteUser.data), localUser: item.to, message: item.message}));
-                console.log(this.state.message.has(item.from));
                 if (this.state.message.has(item.from)) {
                     const msgs = this.state.message.get(item.from);
                     msgs.push(decrypted);
-                    console.log(msgs);
                     this.state.message.set(item.from, msgs);
                 } else {
                     const msgs = [decrypted];
-                    console.log(msgs);
                     this.state.message.set(item.from, msgs);
                 }
             }
         }
         await decryptMessages();
         this.setState({message: this.state.message})
-        console.log(this.state.message);
 
         //alert('A message was received: ' + message + ' from: ');
         event.preventDefault();

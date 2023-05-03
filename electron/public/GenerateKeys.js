@@ -1,12 +1,14 @@
 const {IdentityKeyPair, PreKeyRecord, PrivateKey, SignedPreKeyRecord, ProtocolAddress} = require('@signalapp/libsignal-client');
 const crypto = require("crypto");
 const fs = require("fs")
+const {writeUser, readUser, writeKeys} = require("./FileHelper");
 
 const maxVal = 16777215;
 
 function generateIdentityKeyPair() {
     return IdentityKeyPair.generate();
 }
+
 function generateRegistrationId() {
     return crypto.randomBytes(4).readUInt32BE(0);
 }
@@ -36,16 +38,7 @@ function generateKeys(username) {
         return e.serialize();
     });
 
-    const appdata = process.env.APPDATA || (process.platform === 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share");
-
-    fs.writeFile(appdata + "\\electron\\" + username + ".json", JSON.stringify({
-        identityKeyPair: identityKeyPair.serialize(),
-        registrationId: registrationId,
-        preKeys: preKeys,
-        signedPreKey: signedPreKey.serialize()
-    }), 'utf8', (err) => {
-        if (err) throw err;
-    });
+    writeUser(username, identityKeyPair.serialize(), registrationId, preKeys, signedPreKey.serialize())
 
     return {identityKeyPair: identityKeyPair.serialize(),
         registrationId: registrationId,
@@ -59,8 +52,8 @@ function generateKeys(username) {
 }
 
 function replacePreKey(username) {
-    const appdata = process.env.APPDATA || (process.platform === 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share");
-    let localUser = JSON.parse(fs.readFileSync(appdata + "\\electron\\" + username + ".json", 'utf8'));
+
+    const localUser = readUser(username);
 
     const preKey = generatePreKeys(crypto.randomBytes(4).readUInt32BE(0), 1).map(function(e) {
         return e.serialize();
@@ -68,14 +61,7 @@ function replacePreKey(username) {
 
     localUser.preKeys.push(...preKey)
 
-    fs.writeFile(appdata + "\\electron\\" + username + ".json", JSON.stringify({
-        identityKeyPair: localUser.identityKeyPair,
-        registrationId: localUser.registrationId,
-        preKeys: localUser.preKeys,
-        signedPreKey: localUser.signedPreKey
-    }), 'utf8', (err) => {
-        if (err) throw err;
-    });
+    writeUser(username, localUser.identityKeyPair, localUser.registrationId, localUser.preKeys, localUser.signedPreKey)
 
     return {
         preKey: preKey,
