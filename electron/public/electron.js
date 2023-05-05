@@ -6,6 +6,7 @@ const generateKeys = require('./GenerateKeys');
 const keyHelper = require('./KeyHelper');
 const { ipcMain } = require('electron')
 const Session = require("./Session");
+const {writeMessages, readMessages} = require("./FileHelper");
 
 function createWindow() {
     // Create the browser window.
@@ -48,7 +49,6 @@ ipcMain.on('sendMessageReq', async (event, arg) => {
     const localUser = keyHelper.deserialiseLocalUser(arg.localUser);
     const session = new Session.Session(localUser, remoteUser);
     const encrypted = await session.encrypt(arg.message);
-    console.log(encrypted);
     event.returnValue = ('sendMessageRes', JSON.stringify(encrypted));
 })
 
@@ -57,8 +57,17 @@ ipcMain.on('receiveMessageReq',async (event, arg) => {
     const localUser = keyHelper.deserialiseLocalUser(arg.localUser);
     const session = new Session.Session(localUser, remoteUser);
     const decrypted = await session.decrypt(Buffer.from(arg.message));
-    console.log(decrypted.toString());
     event.returnValue = ('receiveMessageRes', JSON.stringify(decrypted.toString()));
+})
+
+ipcMain.on('writeMessagesReq',async (event, arg) => {
+    writeMessages(arg.name, arg.messages)
+    event.returnValue = ('readMessagesRes', true);
+})
+
+ipcMain.on('readMessagesReq',async (event, arg) => {
+    const messages = readMessages(arg.name);
+    event.returnValue = ('readMessagesRes', messages);
 })
 
 // This method will be called when Electron has finished

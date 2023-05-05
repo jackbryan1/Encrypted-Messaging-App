@@ -24,9 +24,11 @@ router.get("/getUser", async (req, res) => {
 });
 
 router.post("/sendMessage", async (req, res) => {
+    console.log(req.body);
     const message = new Message({
         to: req.body.to,
         from: req.body.from,
+        date: req.body.date,
         message: req.body.message,
     })
     await message.save();
@@ -34,6 +36,7 @@ router.post("/sendMessage", async (req, res) => {
 
 router.get("/getMessage", async (req, res) => {
     const retVal = await Message.find({ to: req.query.name }).exec();
+    await Message.deleteMany({ to: req.query.name }).exec();
     res.json(retVal);
 });
 

@@ -17,10 +17,13 @@ class Session {
         const identityStore = new InMemoryIdentityKeyStore(this.localUser.identityKey.privateKey, this.localUser.registrationId, this.localUser.name);
 
         if (!await sessionStore.getSession(remoteAddress)) {
+            console.log(remoteAddress);
+            console.log(sessionStore);
             await this.processPreKey(remoteAddress, sessionStore, identityStore);
         }
 
         const encrypted = await signalEncrypt(Buffer.from(message), remoteAddress, sessionStore, identityStore);
+        encrypted.type();
         return encrypted.serialize();
     }
 
@@ -168,16 +171,9 @@ class InMemoryIdentityKeyStore extends IdentityKeyStore {
         key,
         _direction
     ) {
-        console.log("incoming key");
-        console.log(key);
         const idx = name.name() + '::' + name.deviceId();
-        console.log(idx);
         if (this.idKeys.has(idx)) {
-            console.log("key from storage");
-            console.log(this.idKeys.get(idx));
             const currentKey = PublicKey.deserialize(this.idKeys.get(idx));
-            console.log("deserialised key");
-            console.log(currentKey);
             return Promise.resolve(currentKey.compare(key) == 0);
         } else {
             return Promise.resolve(true);

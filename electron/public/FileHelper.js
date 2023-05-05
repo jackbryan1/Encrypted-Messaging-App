@@ -54,24 +54,38 @@ function writeUser(username, identityKeyPair, registrationId, preKeys, signedPre
     });
 }
 
-function readMessages(username, type) {
+function readMessages(username) {
 
-    const path = getPath(username, type)
+    const path = getPath(username, 'messages')
 
     let messageObject = readFromFile(path);
 
-    return new Map(Object.entries(messageObject));
+    let retVal;
+    if(messageObject) {
+        retVal = new Map(Object.entries(messageObject));
+    } else {
+        retVal = new Map();
+    }
+
+    return retVal;
 }
 
-function writeMessages(username) {
+function writeMessages(username, messages) {
 
-    const appdata = process.env.APPDATA || (process.platform === 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share");
+    const path = getPath(username, 'messages');
 
-    fs.writeFile(appdata + "\\electron\\" + username + "\\messages.json", JSON.stringify({
+    const existingMessages = readMessages(username);
 
-    }), 'utf8', (err) => {
-        if (err) throw err;
-    });
+    for (let [key, value] of messages.entries()) {
+        if (!existingMessages.has(key)) {
+            existingMessages.set(key, []);
+        }
+        const msgs = existingMessages.get(key);
+        msgs.push(value);
+        existingMessages.set(key, msgs);
+    }
+
+    writeToFile(path, Object.fromEntries(existingMessages));
 }
 
 function readStore(username, type) {

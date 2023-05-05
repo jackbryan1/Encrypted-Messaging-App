@@ -27,7 +27,7 @@ export default function Messages({ message }) {
             <AccordionDetails>
                 {message[1].map((msg) =>
                     <Typography>
-                        { msg }
+                        { msg.message }
                     </Typography>)}
             </AccordionDetails>
         </Accordion>
