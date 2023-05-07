@@ -9,7 +9,6 @@ function getPath(username, type) {
 function writeToFile(path, content) {
 
     ensureDirectoryExistence(path);
-
     fs.writeFile(path, JSON.stringify(content), 'utf8', (err) => {
         if (err) throw err;
     });
@@ -58,15 +57,9 @@ function readMessages(username) {
 
     const path = getPath(username, 'messages')
 
-    let messageObject = readFromFile(path);
+    const messageObject = readFromFile(path);
 
-    let retVal;
-    if(messageObject) {
-        retVal = new Map(Object.entries(messageObject));
-    } else {
-        retVal = new Map();
-    }
-
+    const retVal = messageObject ? changeFromArray(messageObject) : new Map()
     return retVal;
 }
 
@@ -75,17 +68,35 @@ function writeMessages(username, messages) {
     const path = getPath(username, 'messages');
 
     const existingMessages = readMessages(username);
+    const existingMessageArr = changeToArray(existingMessages);
+    const newMessageArr = changeToArray(messages);
+    const allMessages = existingMessageArr.concat(newMessageArr);
+    writeToFile(path, allMessages);
+}
 
-    for (let [key, value] of messages.entries()) {
-        if (!existingMessages.has(key)) {
-            existingMessages.set(key, []);
+function changeToArray(messages) {
+    const arr = [];
+    for(const value of messages.values()) {
+        for (const item of value) {
+            arr.push(item);
         }
-        const msgs = existingMessages.get(key);
-        msgs.push(value);
-        existingMessages.set(key, msgs);
     }
+    return arr;
+}
 
-    writeToFile(path, Object.fromEntries(existingMessages));
+function changeFromArray(messages) {
+    console.log(messages);
+    const map = new Map();
+    messages.forEach(function(item) {
+        console.log(item);
+        if (!map.has(item.other)) {
+            map.set(item.other, []);
+        }
+        const msgs = map.get(item.other);
+        msgs.push(item);
+    })
+    console.log(map);
+    return map;
 }
 
 function readStore(username, type) {

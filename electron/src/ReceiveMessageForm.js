@@ -18,7 +18,6 @@ class ReceiveMessageForm extends React.Component {
         const decryptMessages = async () => {
             event.preventDefault();
             this.state.message.clear();
-            const messages = ipcRenderer.sendSync('readMessagesReq', {name: this.props.name});
 
             const newMessages = await axios.get(
                 "http://localhost:5000/getMessage", {
@@ -26,6 +25,7 @@ class ReceiveMessageForm extends React.Component {
                         name: this.props.name,
                     }
                 });
+
             for (const item of newMessages.data) {
                 const remoteUser = await axios.get(
                     "http://localhost:5000/getUser", {
@@ -34,21 +34,18 @@ class ReceiveMessageForm extends React.Component {
                         }
                     });
 
-                const decrypted = JSON.parse(ipcRenderer.sendSync('receiveMessageReq', {remoteUser: JSON.stringify(remoteUser.data), localUser: item.to, message: item.message}));
+                const decrypted = JSON.parse(ipcRenderer.sendSync('receiveMessageReq', {remoteUser: JSON.stringify(remoteUser.data), localUser: item.to, message: item.message, type: item.type}));
+                console.log(decrypted);
                 const displayMessage = "[" + item.date + "]" + item.from + ": " + decrypted;
 
-                console.log(messages);
+                const newMessages = new Map();
+                newMessages.set(item.from, [{date: item.date, other: item.from, message: displayMessage}]);
                 console.log(newMessages);
-                if (!messages.has(item.from)) {
-                    messages.set(item.from, []);
-                }
-                const msgs = messages.get(item.from);
-                msgs.push({date: item.date, other: item.from, message: displayMessage});
-                messages.set(item.from, msgs);
-                console.log(messages);
+                ipcRenderer.sendSync('writeMessagesReq', {name: this.props.name, messages: newMessages});
             }
-            ipcRenderer.sendSync('writeMessagesReq', {name: this.props.name, messages: messages});
 
+            const messages = ipcRenderer.sendSync('readMessagesReq', {name: this.props.name});
+            console.log(messages);
             this.setState({message: messages})
         }
         await decryptMessages();

@@ -38,8 +38,6 @@ class SendMessageForm extends React.Component {
         }
         const encrypted = await encryptMessage();
         const date = this.getDate();
-        console.log(typeof date);
-        console.log(date);
         const submitRequest = async () => {
             await axios.post("http://localhost:5000/sendMessage", {
                 method: "POST",
@@ -49,7 +47,8 @@ class SendMessageForm extends React.Component {
                 to: this.state.to,
                 from: this.props.name,
                 date: date.toString(),
-                message: encrypted,
+                type: encrypted.type,
+                message: encrypted.message,
             })
                 .catch(error => {
                     window.alert(error);
@@ -61,8 +60,7 @@ class SendMessageForm extends React.Component {
         const displayMessage = "[" + date + "]" + this.props.name + ": " + this.state.message;
 
         const messages = new Map();
-        messages.set(this.state.to, {date: date, other: this.state.to, message: displayMessage});
-        console.log(messages);
+        messages.set(this.state.to, [{date: date, other: this.state.to, message: displayMessage}]);
         ipcRenderer.sendSync('writeMessagesReq', {name: this.props.name, messages: messages});
 
         alert('A message was sent: ' + this.state.message + ' to: ' + this.state.to);

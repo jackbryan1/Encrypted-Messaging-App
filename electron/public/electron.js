@@ -56,7 +56,7 @@ ipcMain.on('receiveMessageReq',async (event, arg) => {
     const remoteUser = keyHelper.deserialiseRemoteUser(JSON.parse(arg.remoteUser));
     const localUser = keyHelper.deserialiseLocalUser(arg.localUser);
     const session = new Session.Session(localUser, remoteUser);
-    const decrypted = await session.decrypt(Buffer.from(arg.message));
+    const decrypted = await session.decrypt(Buffer.from(arg.message), arg.type);
     event.returnValue = ('receiveMessageRes', JSON.stringify(decrypted.toString()));
 })
 

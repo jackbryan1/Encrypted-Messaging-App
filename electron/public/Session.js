@@ -17,14 +17,11 @@ class Session {
         const identityStore = new InMemoryIdentityKeyStore(this.localUser.identityKey.privateKey, this.localUser.registrationId, this.localUser.name);
 
         if (!await sessionStore.getSession(remoteAddress)) {
-            console.log(remoteAddress);
-            console.log(sessionStore);
             await this.processPreKey(remoteAddress, sessionStore, identityStore);
         }
 
         const encrypted = await signalEncrypt(Buffer.from(message), remoteAddress, sessionStore, identityStore);
-        encrypted.type();
-        return encrypted.serialize();
+        return {message: encrypted.serialize(), type: encrypted.type()};
     }
 
     async processPreKey(remoteAddress, sessionStore, identityStore) {
@@ -52,7 +49,7 @@ class Session {
         return remotePreKeyBundle;
     }
 
-    async decrypt(message) {
+    async decrypt(message, type) {
 
         const sessionStore = new InMemorySessionStore(this.localUser.name);
         const identityStore = new InMemoryIdentityKeyStore(this.localUser.identityKey.privateKey, this.localUser.registrationId, this.localUser.name);
@@ -60,25 +57,38 @@ class Session {
 
         let decrypted;
 
-        if(await sessionStore.getSession(remoteAddress)) {
+        if(type === 2) {
             decrypted = this.decryptWithoutPreKey(message, remoteAddress, sessionStore, identityStore);
-        } else {
+        } else if(type === 3) {
             decrypted = this.decryptWithPreKey(message, remoteAddress, sessionStore, identityStore);
+        } else {
+            throw new Error('Invalid Message');
         }
-
         return decrypted;
     }
 
     async createSignedPreKeyStore() {
         const signedPreKeyStore = new InMemorySignedPreKeyStore(this.localUser.name);
-        await signedPreKeyStore.saveSignedPreKey(this.localUser.signedPreKey.id(), this.localUser.signedPreKey, );
+        await signedPreKeyStore.saveSignedPreKey(this.localUser.signedPreKey.id(), this.localUser.signedPreKey);
         return signedPreKeyStore;
     }
 
-    async createPreKeyStore() {
+    async createPreKeyStore(ciphertext) {
+
+        let prekey = this.getPreKey(ciphertext);
+
         const preKeyStore = new InMemoryPreKeyStore(this.localUser.name);
-        await preKeyStore.savePreKey(this.localUser.preKeys[0].id(), this.localUser.preKeys[0]);
+        await preKeyStore.savePreKey(prekey.id(), prekey);
         return preKeyStore;
+    }
+
+    getPreKey(ciphertext) {
+        for (const key of this.localUser.preKeys) {
+            if (key.id() === ciphertext.preKeyId()) {
+                return key;
+            }
+        }
+        throw Error("Prekey not found");
     }
 
     async decryptWithoutPreKey(message, remoteAddress, sessionStore, identityStore) {
@@ -93,7 +103,7 @@ class Session {
 
         const ciphertext = PreKeySignalMessage.deserialize(message);
 
-        const preKeyStore = await this.createPreKeyStore();
+        const preKeyStore = await this.createPreKeyStore(ciphertext);
         const signedPreKeyStore = await this.createSignedPreKeyStore();
 
         const decrypted = await signalDecryptPreKey(ciphertext, remoteAddress, sessionStore, identityStore, preKeyStore, signedPreKeyStore);
