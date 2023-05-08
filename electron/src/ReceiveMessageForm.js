@@ -15,6 +15,18 @@ class ReceiveMessageForm extends React.Component {
     }
 
     async handleSubmit(event) {
+
+        const replacePreKey = async (preKeys) => {
+            console.log(preKeys.length);
+            await axios.post(
+                "http://localhost:5000/replacePreKey", {
+                    params: {
+                        name: this.props.name,
+                        preKeys: preKeys,
+                    }
+                });
+        }
+
         const decryptMessages = async () => {
             event.preventDefault();
             this.state.message.clear();
@@ -35,17 +47,20 @@ class ReceiveMessageForm extends React.Component {
                     });
 
                 const decrypted = JSON.parse(ipcRenderer.sendSync('receiveMessageReq', {remoteUser: JSON.stringify(remoteUser.data), localUser: item.to, message: item.message, type: item.type}));
-                console.log(decrypted);
+
+                const newPreKeys = JSON.parse(ipcRenderer.sendSync('getPreKeyReq', item.to));
+                replacePreKey(newPreKeys);
+
                 const displayMessage = "[" + item.date + "]" + item.from + ": " + decrypted;
 
                 const newMessages = new Map();
                 newMessages.set(item.from, [{date: item.date, other: item.from, message: displayMessage}]);
-                console.log(newMessages);
+
                 ipcRenderer.sendSync('writeMessagesReq', {name: this.props.name, messages: newMessages});
             }
 
             const messages = ipcRenderer.sendSync('readMessagesReq', {name: this.props.name});
-            console.log(messages);
+
             this.setState({message: messages})
         }
         await decryptMessages();

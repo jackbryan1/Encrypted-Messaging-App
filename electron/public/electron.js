@@ -2,11 +2,10 @@ const path = require('path');
 
 const { app, BrowserWindow } = require('electron');
 const isDev = require('electron-is-dev');
-const generateKeys = require('./GenerateKeys');
 const keyHelper = require('./KeyHelper');
 const { ipcMain } = require('electron')
 const Session = require("./Session");
-const {writeMessages, readMessages} = require("./FileHelper");
+const {writeMessages, readMessages, checkUserExists} = require("./FileHelper");
 
 function createWindow() {
     // Create the browser window.
@@ -32,8 +31,12 @@ function createWindow() {
     }
 }
 
+ipcMain.on('checkUserReq', (event, arg) => {
+    event.returnValue = ('checkUserRes', checkUserExists(arg));
+})
+
 ipcMain.on('generateKeysReq', (event, arg) => {
-    event.returnValue = ('generateKeysRes', JSON.stringify(generateKeys.generateKeys(arg)));
+    event.returnValue = ('generateKeysRes', JSON.stringify(keyHelper.generateKeys(arg)));
 })
 
 ipcMain.on('deserialiseRemoteReq', (event, arg) => {
@@ -58,6 +61,20 @@ ipcMain.on('receiveMessageReq',async (event, arg) => {
     const session = new Session.Session(localUser, remoteUser);
     const decrypted = await session.decrypt(Buffer.from(arg.message), arg.type);
     event.returnValue = ('receiveMessageRes', JSON.stringify(decrypted.toString()));
+})
+
+ipcMain.on('removePreKeyReq',async (event, arg) => {
+    const remoteUser = keyHelper.deserialiseRemoteUser(JSON.parse(arg.remoteUser));
+    remoteUser.preKeys.shift();
+    const serialised = keyHelper.serialiseRemoteUser(remoteUser);
+    console.log(serialised.preKeys.length)
+    event.returnValue = ('removePreKeyRes', JSON.stringify(serialised));
+})
+
+ipcMain.on('getPreKeyReq',async (event, arg) => {
+    console.log(arg)
+    const localUser = keyHelper.deserialiseLocalUser(arg);
+    event.returnValue = ('removePreKeyRes', JSON.stringify(localUser.preKeys));
 })
 
 ipcMain.on('writeMessagesReq',async (event, arg) => {

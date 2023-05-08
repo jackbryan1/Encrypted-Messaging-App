@@ -3,6 +3,7 @@ const {IdentityKeyStore, SessionStore, signalEncrypt, ProtocolAddress, SessionRe
     SignedPreKeyRecord, PreKeyRecord, signalDecrypt, SignalMessage, PublicKey
 } = require("@signalapp/libsignal-client");
 const {readStore, writeStore} = require("./FileHelper");
+const {replacePreKey} = require("./KeyHelper");
 
 class Session {
     constructor(localUser, remoteUser) {
@@ -107,6 +108,8 @@ class Session {
         const signedPreKeyStore = await this.createSignedPreKeyStore();
 
         const decrypted = await signalDecryptPreKey(ciphertext, remoteAddress, sessionStore, identityStore, preKeyStore, signedPreKeyStore);
+
+        replacePreKey(this.localUser.name, ciphertext.preKeyId());
         return decrypted;
     }
 }

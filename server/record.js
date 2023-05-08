@@ -31,21 +31,22 @@ router.post("/sendMessage", async (req, res) => {
         type: req.body.type,
         message: req.body.message,
     })
-    console.log(message);
     await message.save();
 });
 
 router.get("/getMessage", async (req, res) => {
     const retVal = await Message.find({ to: req.query.name }).exec();
     Message.deleteMany({ to: req.query.name }).then((result) => {
-        console.log(result);
+        //console.log(result);
     });
     res.json(retVal);
 });
 
 router.post("/replacePreKey", async (req, res) => {
-    const retVal = await Message.find({ to: req.query.name }).exec();
-    res.json(retVal);
+    const user = await User.findOne({ name: req.body.name });
+    user.preKeys = req.body.preKeys;
+    console.log(user.preKeys.length);
+    user.save();
 });
 
 module.exports = router;

@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import {IconButton, Tooltip} from "@mui/material";
+import {Alert, Collapse, IconButton, Tooltip} from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 
 const { ipcRenderer } = window.require('electron');
@@ -8,7 +8,7 @@ const { ipcRenderer } = window.require('electron');
 class SendMessageForm extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {to: '', message: ''};
+        this.state = {to: '', message: '', error: false};
 
         this.handleToChange = this.handleToChange.bind(this);
         this.handleMessageChange = this.handleMessageChange.bind(this);
@@ -24,47 +24,77 @@ class SendMessageForm extends React.Component {
     }
 
     async handleSubmit(event) {
-        const encryptMessage = async () => {
-            event.preventDefault();
+        event.preventDefault();
+        const getUser = async () => {
             const retVal = await axios.get(
                 "http://localhost:5000/getUser", {
                     params: {
                         name: this.state.to,
                     }
                 });
-
-            const encrypted = JSON.parse(ipcRenderer.sendSync('sendMessageReq', {remoteUser: JSON.stringify(retVal.data), localUser: this.props.name, message: this.state.message}));
-            return encrypted;
+            return retVal.data;
         }
-        const encrypted = await encryptMessage();
-        const date = this.getDate();
-        const submitRequest = async () => {
-            await axios.post("http://localhost:5000/sendMessage", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                to: this.state.to,
-                from: this.props.name,
-                date: date.toString(),
-                type: encrypted.type,
-                message: encrypted.message,
-            })
-                .catch(error => {
-                    window.alert(error);
-
-                });
+        const encryptMessage = async (user) => {
+            return JSON.parse(ipcRenderer.sendSync('sendMessageReq', {
+                remoteUser: JSON.stringify(user),
+                localUser: this.props.name,
+                message: this.state.message
+            }));
         }
-        submitRequest();
 
-        const displayMessage = "[" + date + "]" + this.props.name + ": " + this.state.message;
+        const user = await getUser();
+        console.log(user.name);
+        console.log(this.props.name);
+        if (this.state.to !== "" && this.state.to !== this.props.name && user !== null) {
+            const encrypted = await encryptMessage(user);
+            const date = this.getDate();
+            const submitRequest = async () => {
+                await axios.post("http://localhost:5000/sendMessage", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    to: this.state.to,
+                    from: this.props.name,
+                    date: date.toString(),
+                    type: encrypted.type,
+                    message: encrypted.message,
+                })
+                    .catch(error => {
+                        window.alert(error);
+                    });
+            }
 
-        const messages = new Map();
-        messages.set(this.state.to, [{date: date, other: this.state.to, message: displayMessage}]);
-        ipcRenderer.sendSync('writeMessagesReq', {name: this.props.name, messages: messages});
+            const removePreKey = async () => {
 
-        alert('A message was sent: ' + this.state.message + ' to: ' + this.state.to);
-        event.preventDefault();
+                const removedUser = JSON.parse(ipcRenderer.sendSync('removePreKeyReq', {remoteUser: JSON.stringify(user)}));
+
+                await axios.post("http://localhost:5000/replacePreKey", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    name: removedUser.name,
+                    preKeys: removedUser.preKeys,
+                })
+                    .catch(error => {
+                        window.alert(error);
+                    });
+            }
+
+            submitRequest();
+
+            removePreKey();
+
+            const displayMessage = "[" + date + "]" + this.props.name + ": " + this.state.message;
+
+            const messages = new Map();
+            messages.set(this.state.to, [{date: date, other: this.state.to, message: displayMessage}]);
+            ipcRenderer.sendSync('writeMessagesReq', {name: this.props.name, messages: messages});
+            this.setState({error: false})
+        } else {
+            this.setState({error: true});
+        }
     }
 
     getDate() {
@@ -94,6 +124,15 @@ class SendMessageForm extends React.Component {
                         <InfoIcon></InfoIcon>
                     </IconButton>
                 </Tooltip>
+                <Collapse in={this.state.error}>
+                    <Alert
+                        severity="error"
+                        onClose={() => {this.setState({error: false});}}
+                        sx={{ mb: 2 }}
+                    >
+                        Invalid Username
+                    </Alert>
+                </Collapse>
             </form>
         );
     }

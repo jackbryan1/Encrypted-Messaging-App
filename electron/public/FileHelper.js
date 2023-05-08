@@ -16,26 +16,40 @@ function writeToFile(path, content) {
 
 function ensureDirectoryExistence(filePath) {
     let dirname = path.dirname(filePath);
-    if (fs.existsSync(dirname)) {
+    if (checkExists(dirname)) {
         return true;
     }
     ensureDirectoryExistence(dirname);
     fs.mkdirSync(dirname);
 }
 
+function checkExists(dirname) {
+    return fs.existsSync(dirname);
+}
+
 function readFromFile(path) {
     let retVal;
     try {
-        retVal = JSON.parse(fs.readFileSync(path, 'utf8'));
+        const fromFile = fs.readFileSync(path, 'utf8');
+        console.log(fromFile);
+        retVal = JSON.parse(fromFile);
     } catch (err) {
+        console.log(err);
         retVal = null;
     }
     return retVal;
 }
 
+function checkUserExists(username) {
+
+    const path = getPath(username, "user");
+
+    return checkExists(path);
+}
+
 function readUser(username) {
 
-    const path = getPath(username, "user")
+    const path = getPath(username, "user");
 
     return readFromFile(path);
 }
@@ -85,17 +99,14 @@ function changeToArray(messages) {
 }
 
 function changeFromArray(messages) {
-    console.log(messages);
     const map = new Map();
     messages.forEach(function(item) {
-        console.log(item);
         if (!map.has(item.other)) {
             map.set(item.other, []);
         }
         const msgs = map.get(item.other);
         msgs.push(item);
     })
-    console.log(map);
     return map;
 }
 
@@ -131,5 +142,6 @@ module.exports = {
     readMessages,
     writeMessages,
     readStore,
-    writeStore
+    writeStore,
+    checkUserExists
 };
