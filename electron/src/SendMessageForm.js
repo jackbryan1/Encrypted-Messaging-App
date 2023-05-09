@@ -43,8 +43,6 @@ class SendMessageForm extends React.Component {
         }
 
         const user = await getUser();
-        console.log(user.name);
-        console.log(this.props.name);
         if (this.state.to !== "" && this.state.to !== this.props.name && user !== null) {
             const encrypted = await encryptMessage(user);
             const date = this.getDate();

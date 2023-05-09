@@ -21,10 +21,12 @@ function deserialisePreKey(preKeyRecord) {
     return PreKeyRecord.deserialize(Buffer.from(preKeyRecord));
 }
 
+function serialisePreKey(preKey) {
+    preKey.serialize();
+}
+
 function deserialiseLocalUser(username) {
-    console.log(username);
     const localUser = readUser(username);
-    console.log(localUser);
     return {
         name: localUser.name,
         identityKey: deserialiseIdentityKeyPair(Buffer.from(localUser.identityKeyPair)),
@@ -127,11 +129,12 @@ function replacePreKey(username, preKeyId) {
 
     const preKey = generatePreKeys(crypto.randomBytes(4).readUInt32BE(0), 1);
 
-    keys = keys.concat(preKey).map(function(e) {
+    const allKeys = keys.concat(preKey)
+    const writeKeys = allKeys.map(function(e) {
         return e.serialize();
     });
 
-    writeUser(username, localUser.identityKeyPair, localUser.registrationId, keys, localUser.signedPreKey)
+    writeUser(username, localUser.identityKeyPair, localUser.registrationId, writeKeys, localUser.signedPreKey);
 }
 
 module.exports = {

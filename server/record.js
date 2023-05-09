@@ -45,7 +45,6 @@ router.get("/getMessage", async (req, res) => {
 router.post("/replacePreKey", async (req, res) => {
     const user = await User.findOne({ name: req.body.name });
     user.preKeys = req.body.preKeys;
-    console.log(user.preKeys.length);
     user.save();
 });
 

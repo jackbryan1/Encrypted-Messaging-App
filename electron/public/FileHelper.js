@@ -30,11 +30,11 @@ function checkExists(dirname) {
 function readFromFile(path) {
     let retVal;
     try {
-        const fromFile = fs.readFileSync(path, 'utf8');
-        console.log(fromFile);
-        retVal = JSON.parse(fromFile);
+        retVal = JSON.parse(fs.readFileSync(path, 'utf8'));
     } catch (err) {
-        console.log(err);
+        /*if(path.contains("z155")){
+            console.log(err);
+        }*/
         retVal = null;
     }
     return retVal;

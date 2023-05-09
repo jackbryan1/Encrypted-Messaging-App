@@ -67,14 +67,15 @@ ipcMain.on('removePreKeyReq',async (event, arg) => {
     const remoteUser = keyHelper.deserialiseRemoteUser(JSON.parse(arg.remoteUser));
     remoteUser.preKeys.shift();
     const serialised = keyHelper.serialiseRemoteUser(remoteUser);
-    console.log(serialised.preKeys.length)
     event.returnValue = ('removePreKeyRes', JSON.stringify(serialised));
 })
 
 ipcMain.on('getPreKeyReq',async (event, arg) => {
-    console.log(arg)
     const localUser = keyHelper.deserialiseLocalUser(arg);
-    event.returnValue = ('removePreKeyRes', JSON.stringify(localUser.preKeys));
+    const retVal = localUser.preKeys.map(function(e) {
+        return e.serialize();
+    });
+    event.returnValue = ('removePreKeyRes', JSON.stringify(retVal));
 })
 
 ipcMain.on('writeMessagesReq',async (event, arg) => {
