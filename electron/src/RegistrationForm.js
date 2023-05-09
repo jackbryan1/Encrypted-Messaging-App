@@ -1,13 +1,13 @@
 import React from 'react';
 import axios from 'axios';
-import {Alert, Collapse, IconButton, Tooltip} from "@mui/material";
+import {Alert, Button, Collapse, IconButton, TextField, Tooltip} from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 const { ipcRenderer } = window.require('electron');
 
 class RegistrationForm extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {name: "", error: false};
+        this.state = {name: "", error: false, success: false};
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -57,41 +57,53 @@ class RegistrationForm extends React.Component {
         const existsRemote = await existsRemotely();
         const existsLocal = await existsLocally();
         if (this.state.name === "") {
-            this.setState({error: true});
+            this.setState({error: true, success: false});
         } else if (!existsRemote) {
             submitRequest();
             this.props.setName(this.state.name);
-            this.setState({error: false});
+            this.setState({name: "", error: false, success: true});
         } else if (!existsLocal) {
-            this.setState({error: true});
+            this.setState({error: true, success: false});
         } else {
             this.props.setName(this.state.name);
-            this.setState({error: false});
+            this.setState({name: "", error: false, success: true});
         }
     }
 
     render() {
         return (
             <form onSubmit={this.handleSubmit}>
-                <label>
-                    Username:
-                    <input type="text" value={this.state.name} onChange={this.handleChange} />
-                </label>
-                <input type="submit" value="Set" />
+
+                <TextField variant="standard" InputProps={{readOnly: true,}} value={"Current Username: " + this.props.name} />
+                <br></br><br></br>
+                <TextField label="Username" size="small" variant="outlined" value={this.state.name} onChange={this.handleChange} />
+                <Button variant="contained" type="submit">Set</Button>
                 <Tooltip title="At registration your public and private keys will be generated along with your prekeys">
                     <IconButton>
                         <InfoIcon></InfoIcon>
                     </IconButton>
                 </Tooltip>
                 <Collapse in={this.state.error}>
+                    <br></br>
                     <Alert
                         severity="error"
                         onClose={() => {this.setState({error: false});}}
                         sx={{ mb: 2 }}
                     >
-                        Invalid Username
+                        Invalid Username!
                     </Alert>
                 </Collapse>
+                <Collapse in={this.state.success}>
+                    <br></br>
+                    <Alert
+                        severity="success"
+                        onClose={() => {this.setState({success: false});}}
+                        sx={{ mb: 2 }}
+                    >
+                        Username Set!
+                    </Alert>
+                </Collapse>
+                <br></br>
             </form>
         );
     }

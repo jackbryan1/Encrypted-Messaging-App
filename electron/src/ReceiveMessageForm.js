@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import {IconButton, Tooltip} from "@mui/material";
+import {Button, IconButton, Tooltip} from "@mui/material";
 import InfoIcon from '@mui/icons-material/Info';
 import Messages from "./Messages";
 
@@ -56,7 +56,7 @@ class ReceiveMessageForm extends React.Component {
 
             const messages = ipcRenderer.sendSync('readMessagesReq', {name: this.props.name});
 
-            this.setState({message: messages})
+            this.setState({message: messages});
 
             for (const item of newMessages.data) {
                 if (item.type === 3) {
@@ -68,16 +68,13 @@ class ReceiveMessageForm extends React.Component {
         }
         await decryptMessages();
 
-
-
-        //alert('A message was received: ' + message + ' from: ');
-        event.preventDefault(this.props.name, this.state.message);
+        event.preventDefault();
     }
 
     render() {
         return (
             <form onSubmit={this.handleSubmit}>
-                <input type="submit" value="Receive" />
+                <Button variant="contained" type="submit">Receive</Button>
                 <Tooltip title="When a message is received it is decrypted using the private key of the recipient">
                     <IconButton>
                         <InfoIcon></InfoIcon>
@@ -86,6 +83,7 @@ class ReceiveMessageForm extends React.Component {
                 <div>
                     {Array.from(this.state.message.entries()).map((message) => <Messages message={message}/>)}
                 </div>
+                <br></br>
             </form>
         );
     }

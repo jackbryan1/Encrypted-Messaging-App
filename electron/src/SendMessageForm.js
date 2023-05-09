@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import {Alert, Collapse, IconButton, Tooltip} from "@mui/material";
+import {Alert, Button, Collapse, IconButton, TextField, Tooltip} from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 
 const { ipcRenderer } = window.require('electron');
@@ -8,7 +8,7 @@ const { ipcRenderer } = window.require('electron');
 class SendMessageForm extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {to: '', message: '', error: false};
+        this.state = {to: '', message: '', error: false, success: false};
 
         this.handleToChange = this.handleToChange.bind(this);
         this.handleMessageChange = this.handleMessageChange.bind(this);
@@ -89,9 +89,9 @@ class SendMessageForm extends React.Component {
             const messages = new Map();
             messages.set(this.state.to, [{date: date, other: this.state.to, message: displayMessage}]);
             ipcRenderer.sendSync('writeMessagesReq', {name: this.props.name, messages: messages});
-            this.setState({error: false})
+            this.setState({to: "", message: "", error: false, success: true});
         } else {
-            this.setState({error: true});
+            this.setState({error: true, success: false});
         }
     }
 
@@ -108,15 +108,9 @@ class SendMessageForm extends React.Component {
     render() {
         return (
             <form onSubmit={this.handleSubmit}>
-                <label>
-                    To:
-                    <input type="text" value={this.state.to} onChange={this.handleToChange} />
-                </label>
-                <label>
-                    Message:
-                    <input type="text" value={this.state.message} onChange={this.handleMessageChange} />
-                </label>
-                <input type="submit" value="Send" />
+                <TextField label="To" size="small" variant="outlined" value={this.state.to} onChange={this.handleToChange} />
+                <TextField label="Message" size="small" variant="outlined" value={this.state.message} onChange={this.handleMessageChange} />
+                <Button variant="contained" type="submit">Send</Button>
                 <Tooltip title="When a message is sent it is encrypted using the user's keys and sent to the server">
                     <IconButton>
                         <InfoIcon></InfoIcon>
@@ -131,6 +125,17 @@ class SendMessageForm extends React.Component {
                         Invalid Username
                     </Alert>
                 </Collapse>
+                <Collapse in={this.state.success}>
+                    <br></br>
+                    <Alert
+                        severity="success"
+                        onClose={() => {this.setState({success: false});}}
+                        sx={{ mb: 2 }}
+                    >
+                        Message Sent!
+                    </Alert>
+                </Collapse>
+                <br></br>
             </form>
         );
     }
