@@ -32,20 +32,28 @@ router.post("/sendMessage", async (req, res) => {
         message: req.body.message,
     })
     await message.save();
+    res.json();
 });
 
 router.get("/getMessage", async (req, res) => {
+    console.log("get: start");
     const retVal = await Message.find({ to: req.query.name }).exec();
+    console.log("get: found");
     Message.deleteMany({ to: req.query.name }).then((result) => {
         //console.log(result);
     });
+    console.log("get: deleted");
     res.json(retVal);
 });
 
 router.post("/replacePreKey", async (req, res) => {
+    console.log("PREKEY: start");
     const user = await User.findOne({ name: req.body.name });
+    console.log("PREKEY: found");
     user.preKeys = req.body.preKeys;
     user.save();
+    console.log("PREKEY: saved");
+    res.json();
 });
 
 module.exports = router;

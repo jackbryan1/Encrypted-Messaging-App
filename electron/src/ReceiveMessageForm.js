@@ -15,7 +15,7 @@ class ReceiveMessageForm extends React.Component {
     }
 
     async handleSubmit(event) {
-
+        event.preventDefault();
         const replacePreKey = async (preKeys) => {
             await axios.post(
                 "http://localhost:5000/replacePreKey", {
@@ -45,7 +45,6 @@ class ReceiveMessageForm extends React.Component {
 
                 const decrypted = JSON.parse(ipcRenderer.sendSync('receiveMessageReq', {remoteUser: JSON.stringify(remoteUser.data), localUser: item.to, message: item.message, type: item.type}));
 
-
                 const displayMessage = "[" + item.date + "]" + item.from + ": " + decrypted;
 
                 const newMessages = new Map();
@@ -67,8 +66,6 @@ class ReceiveMessageForm extends React.Component {
 
         }
         await decryptMessages();
-
-        event.preventDefault();
     }
 
     render() {

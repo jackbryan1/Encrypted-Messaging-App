@@ -15,7 +15,11 @@ class Session {
 
         const remoteAddress = ProtocolAddress.new(this.remoteUser.name, 1);
         const sessionStore = new InMemorySessionStore(this.localUser.name);
-        const identityStore = new InMemoryIdentityKeyStore(this.localUser.identityKey.privateKey, this.localUser.registrationId, this.localUser.name);
+        const identityStore = new InMemoryIdentityKeyStore(
+            this.localUser.identityKey.privateKey,
+            this.localUser.registrationId,
+            this.localUser.name
+        );
 
         if (!await sessionStore.getSession(remoteAddress)) {
             await this.processPreKey(remoteAddress, sessionStore, identityStore);
@@ -53,7 +57,11 @@ class Session {
     async decrypt(message, type) {
 
         const sessionStore = new InMemorySessionStore(this.localUser.name);
-        const identityStore = new InMemoryIdentityKeyStore(this.localUser.identityKey.privateKey, this.localUser.registrationId, this.localUser.name);
+        const identityStore = new InMemoryIdentityKeyStore(
+            this.localUser.identityKey.privateKey,
+            this.localUser.registrationId,
+            this.localUser.name
+        );
         const remoteAddress = ProtocolAddress.new(this.remoteUser.name, 1);
 
         let decrypted;
@@ -107,7 +115,13 @@ class Session {
         const preKeyStore = await this.createPreKeyStore(ciphertext);
         const signedPreKeyStore = await this.createSignedPreKeyStore();
 
-        const decrypted = await signalDecryptPreKey(ciphertext, remoteAddress, sessionStore, identityStore, preKeyStore, signedPreKeyStore);
+        const decrypted = await signalDecryptPreKey(
+            ciphertext,
+            remoteAddress,
+            sessionStore, identityStore,
+            preKeyStore,
+            signedPreKeyStore
+        );
 
         replacePreKey(this.localUser.name, ciphertext.preKeyId());
         return decrypted;

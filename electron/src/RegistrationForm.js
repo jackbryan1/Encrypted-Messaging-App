@@ -7,7 +7,7 @@ const { ipcRenderer } = window.require('electron');
 class RegistrationForm extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {name: "", error: false, success: false};
+        this.state = {name: "", error: false, success: false, errorMessage: ""};
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -17,6 +17,7 @@ class RegistrationForm extends React.Component {
     }
 
     async handleSubmit(event) {
+        console.log("submit registration");
         event.preventDefault();
         const existsLocally = async () => {
             const fileExists = JSON.parse(ipcRenderer.sendSync('checkUserReq', this.state.name));
